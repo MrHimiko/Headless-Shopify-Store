@@ -1,0 +1,29 @@
+parameters:
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Service\Shopify\ShopifyClient:
+        arguments:
+            $shopifyStoreDomain: '%env(SHOPIFY_STORE_DOMAIN)%'
+            $shopifyApiVersion: '%env(SHOPIFY_API_VERSION)%'
+            $shopifyStorefrontPrivateToken: '%env(SHOPIFY_STOREFRONT_PRIVATE_TOKEN)%'
+
+    App\Service\Shopify\ShopifyProductService:
+        arguments:
+            $client: '@App\Service\Shopify\ShopifyClient'
+            $cache: '@cache.app'
+
+    App\Service\Shopify\ShopifyCollectionService:
+        arguments:
+            $client: '@App\Service\Shopify\ShopifyClient'
+            $cache: '@cache.app'
