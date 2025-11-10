@@ -27,3 +27,7 @@ services:
         arguments:
             $client: '@App\Service\Shopify\ShopifyClient'
             $cache: '@cache.app'
+
+    App\Service\Shopify\ShopifyCartService:
+        arguments:
+            $client: '@App\Service\Shopify\ShopifyClient'

@@ -25,7 +25,7 @@
                 <h1 class="product-page__title">{{ product.title }}</h1>
                 
                 <div class="product-page__price">
-                    {{ formatPrice(product.priceRange.minVariantPrice.amount) }}
+                    {{ formatPrice(selectedVariant?.price || product.priceRange.minVariantPrice.amount) }}
                 </div>
                 
                 <div class="product-page__description" v-if="product.description">
@@ -47,21 +47,18 @@
                     </div>
                 </div>
                 
-                <div class="product-page__actions">
-                    <button class="product-page__add-to-cart" @click="addToCart">
-                        <PhShoppingCart :size="20" />
-                        Add to Cart
-                    </button>
-                    <button class="product-page__wishlist">
-                        <PhHeart :size="20" />
-                    </button>
-                </div>
+                <AddToCartButton 
+                    :product="cartProduct"
+                    :disabled="!selectedVariant?.availableForSale"
+                    :buttonText="selectedVariant?.availableForSale ? 'Add to Cart' : 'Out of Stock'"
+                />
                 
                 <div class="product-page__meta">
                     <div class="product-page__meta-item">
                         <strong>Availability:</strong>
-                        <span v-if="selectedVariant?.availableForSale" class="in-stock">In Stock</span>
-                        <span v-else class="out-of-stock">Out of Stock</span>
+                        <span :class="selectedVariant?.availableForSale ? 'in-stock' : 'out-of-stock'">
+                            {{ selectedVariant?.availableForSale ? 'In Stock' : 'Out of Stock' }}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -70,24 +67,36 @@
 </template>
 
 <script setup>
-import { PhShoppingCart, PhHeart } from '@phosphor-icons/vue'
+import { ref, computed } from 'vue'
+import AddToCartButton from '~/modules/cart/components/AddToCartButton.vue'
 
 const route = useRoute()
 const product = ref(null)
+const selectedVariant = ref(null)
 const loading = ref(true)
 const error = ref(null)
-const selectedVariant = ref(null)
 
 const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('de-DE', {
         style: 'currency',
         currency: 'EUR'
     }).format(price)
 }
 
-const addToCart = () => {
-    console.log('Add to cart:', selectedVariant.value || product.value)
-}
+const cartProduct = computed(() => {
+    if (!product.value || !selectedVariant.value) return null
+    
+    return {
+        variantId: selectedVariant.value.id,
+        productId: product.value.id,
+        title: product.value.title,
+        variant: selectedVariant.value.title || 'Default',
+        price: selectedVariant.value.price || product.value.priceRange.minVariantPrice.amount,
+        image: product.value.images[0]?.url || null,
+        quantity: 1,
+        handle: product.value.handle
+    }
+})
 
 onMounted(async () => {
     try {
@@ -106,7 +115,8 @@ onMounted(async () => {
                 images: data.images.edges.map(edge => edge.node),
                 variants: data.variants.edges.map(edge => ({
                     id: edge.node.id,
-                    title: edge.node.title || 'Default',
+                    title: edge.node.title,
+                    price: edge.node.price?.amount || data.priceRange.minVariantPrice.amount,
                     availableForSale: edge.node.availableForSale
                 }))
             }
@@ -207,49 +217,8 @@ onMounted(async () => {
     color: white;
 }
 
-.product-page__actions {
-    display: flex;
-    gap: var(--space-md);
-    margin-bottom: var(--space-xl);
-}
-
-.product-page__add-to-cart {
-    flex: 1;
-    padding: var(--space-md) var(--space-xl);
-    background: var(--brand-primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-sm);
-}
-
-.product-page__add-to-cart:hover {
-    background: var(--brand-secondary);
-}
-
-.product-page__wishlist {
-    padding: var(--space-md);
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all var(--transition);
-    display: flex;
-    align-items: center;
-}
-
-.product-page__wishlist:hover {
-    background: var(--bg-tertiary);
-}
-
 .product-page__meta {
+    margin-top: var(--space-xl);
     padding-top: var(--space-lg);
     border-top: 1px solid var(--border-light);
 }

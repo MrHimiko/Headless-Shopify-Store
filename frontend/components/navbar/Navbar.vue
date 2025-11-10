@@ -18,8 +18,11 @@
                 <button @click="openPopup('account')" class="c-navbar__icon">
                     <PhUser :size="24" />
                 </button>
-                <button @click="openPopup('cart')" class="c-navbar__icon">
+                <button @click="toggleCart" class="c-navbar__icon c-navbar__cart">
                     <PhShoppingCart :size="24" />
+                    <span v-if="itemCount > 0" class="c-navbar__cart-badge">
+                        {{ itemCount }}
+                    </span>
                 </button>
             </div>
         </div>
@@ -28,8 +31,10 @@
 
 <script setup>
 import { PhMagnifyingGlass, PhUser, PhShoppingCart } from '@phosphor-icons/vue'
+import { useCart } from '~/modules/cart/composables/useCart'
 
 const { openPopup } = usePopup()
+const { itemCount, toggleCart } = useCart()
 </script>
 
 <style src="./style.css"></style>

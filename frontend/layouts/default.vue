@@ -5,14 +5,11 @@
             <slot />
         </main>
         
+        <CartDrawer />
+        
         <Popup name="account">
             <h3>Account</h3>
             <p>Login/Register functionality coming soon...</p>
-        </Popup>
-        
-        <Popup name="cart">
-            <h3>Shopping Cart</h3>
-            <p>Cart is empty</p>
         </Popup>
         
         <Popup name="search">
@@ -21,3 +18,7 @@
         </Popup>
     </div>
 </template>
+
+<script setup>
+import CartDrawer from '~/modules/cart/components/CartDrawer.vue'
+</script>
