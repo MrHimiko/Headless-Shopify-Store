@@ -1,0 +1,63 @@
+.c-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: var(--space-md);
+}
+
+.c-popup__content {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: var(--space-xl);
+    position: relative;
+    box-shadow: var(--shadow-lg);
+}
+
+.c-popup__close {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: var(--space-xs);
+    display: flex;
+    align-items: center;
+    transition: color var(--transition);
+}
+
+.c-popup__close:hover {
+    color: var(--text-primary);
+}
+
+.popup-enter-active,
+.popup-leave-active {
+    transition: opacity var(--transition);
+}
+
+.popup-enter-from,
+.popup-leave-to {
+    opacity: 0;
+}
+
+.popup-enter-active .c-popup__content,
+.popup-leave-active .c-popup__content {
+    transition: transform var(--transition);
+}
+
+.popup-enter-from .c-popup__content,
+.popup-leave-to .c-popup__content {
+    transform: scale(0.9);
+}

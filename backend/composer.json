@@ -9,6 +9,7 @@
         "ext-iconv": "*",
         "doctrine/doctrine-migrations-bundle": "*",
         "doctrine/orm": "^3.5",
+        "nelmio/cors-bundle": "^2.6",
         "phpclassic/php-shopify": "^1.2",
         "predis/predis": "^3.2",
         "symfony/cache": "7.2.*",
