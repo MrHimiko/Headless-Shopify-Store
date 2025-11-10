@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+    nginx:
+        image: nginx:alpine
+        container_name: shopify_nginx
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+            - ./backend/public:/var/www/backend/public:ro
+            - /etc/letsencrypt:/etc/letsencrypt:ro
+        depends_on:
+            - backend
+            - frontend
+        networks:
+            - shopify_network
+        restart: unless-stopped
+
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        container_name: shopify_backend
+        working_dir: /var/www/backend
+        volumes:
+            - ./backend:/var/www/backend
+            - backend_vendor:/var/www/backend/vendor
+        environment:
+            - APP_ENV=${APP_ENV:-prod}
+            - APP_SECRET=${APP_SECRET}
+            - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
+            - REDIS_URL=redis://redis:6379
+            - SHOPIFY_STORE_DOMAIN=${SHOPIFY_STORE_DOMAIN}
+            - SHOPIFY_API_VERSION=${SHOPIFY_API_VERSION}
+            - SHOPIFY_STOREFRONT_PRIVATE_TOKEN=${SHOPIFY_STOREFRONT_PRIVATE_TOKEN}
+            - SHOPIFY_ADMIN_API_TOKEN=${SHOPIFY_ADMIN_API_TOKEN}
+        depends_on:
+            - postgres
+            - redis
+        networks:
+            - shopify_network
+        restart: unless-stopped
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: shopify_frontend
+        working_dir: /app
+        environment:
+            - NUXT_PUBLIC_API_BASE=https://stagebox.store/api
+            - NUXT_PUBLIC_SHOPIFY_STORE_DOMAIN=${SHOPIFY_STORE_DOMAIN}
+            - NUXT_PUBLIC_SHOPIFY_API_VERSION=${SHOPIFY_API_VERSION}
+            - NUXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN=${SHOPIFY_STOREFRONT_PUBLIC_TOKEN}
+        depends_on:
+            - backend
+        networks:
+            - shopify_network
+        restart: unless-stopped
+
+    postgres:
+        image: postgres:16-alpine
+        container_name: shopify_postgres
+        environment:
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        networks:
+            - shopify_network
+        restart: unless-stopped
+
+    redis:
+        image: redis:7-alpine
+        container_name: shopify_redis
+        command: redis-server --appendonly yes
+        volumes:
+            - redis_data:/data
+        networks:
+            - shopify_network
+        restart: unless-stopped
+
+networks:
+    shopify_network:
+        driver: bridge
+
+volumes:
+    postgres_data:
+    redis_data:
+    backend_vendor:
+    frontend_node_modules:

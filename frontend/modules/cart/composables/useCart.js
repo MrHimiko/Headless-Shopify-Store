@@ -47,7 +47,7 @@ export const useCart = () => {
                 quantity: item.quantity
             }))
 
-            const response = await $fetch(`${apiBase}/api/cart/create`, {
+            const response = await $fetch(`${apiBase}/cart/create`, {
                 method: 'POST',
                 body: { lines }
             })
